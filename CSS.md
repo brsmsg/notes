@@ -67,6 +67,8 @@ fixed：相对viewport
 
 sticky：不超过阈值时表现为relative，超过阈值表现为fixed
 
+fix时相对偏移量为最近有滚动框的元素
+
 
 
 #### margin padding 百分比
@@ -98,3 +100,18 @@ rem: 根元素的font-size
 
 
 
+## 动画
+
+分类： JS控制（setTimeout/requestAnimationFrame）
+
+CSS控制
+
+Canvas/SVG
+
+* setTimeout问题：主线程代码需要执行时间较长或者事件队列里有其他排在定时器前的事件，超过定时器间隔，导致帧率不够
+* raf把动画绘制任务交给浏览器，浏览器空闲时绘制一帧动画，不会有等待/多余的帧，更平滑
+
+CSS3:
+
+* 无法使用逐帧，仅使用关键帧
+* 执行和js主线程无关

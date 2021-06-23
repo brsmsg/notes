@@ -6,6 +6,10 @@
 
 类似Redux
 
+component中dispatch acitons。或者commit mutations，
+
+通过mutations修改state，state修改后render到component上
+
 ![vuex](https://vuex.vuejs.org/vuex.png)
 
 ### store

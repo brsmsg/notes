@@ -36,3 +36,28 @@ document type
 metaData不会显示在页面上，但是机器可以识别。
 
 name: viewPort。使用响应式 media
+
+
+
+
+
+
+
+## Canvas
+
+Canvas绘图模糊问题
+
+**devicePixelRatio**属性
+
+返回物理像素分辨率和CSS像素分辨率。Retina屏下是2
+
+即像素点变多，一个px会对应两个像素
+
+**解决方案**
+
+canvas宽高和css宽高：
+
+将canvas宽高（canvas的width和height属性），即画布大小*2来转换成相应物理像素，之后设置canvas元素宽高（style的width和height）
+
+此时画布内容缩小，使用scale()，不会改变内容素质。
+

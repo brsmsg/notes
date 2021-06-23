@@ -1,6 +1,8 @@
 ## 生命周期
 
-![image-20210217225410367](C:\Users\20767\AppData\Roaming\Typora\typora-user-images\image-20210217225410367.png)
+![image-20210514112832862](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514112832862.png)
+
+子组件更新不回影响父组件，父组件更新影响子组件。
 
 Fiber树 =>   也就是虚拟DOM 树  
 
@@ -90,8 +92,6 @@ MVVM就是实现了数据绑定的MVP（双向绑定：View 变动反映在ViewM
 
 
 ## V-DOM & Diff
-
-
 
 一个规范化JS对象，之后再渲染成真实DOM节点。伪类尽可能少的操作DOM，在后续渲染上提升效率
 

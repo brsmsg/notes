@@ -30,6 +30,40 @@ rebase之后的分支记录
 
 * rebase可以合并多次无意义提交，同时没有多余的合并记录，commit顺序不一定按照commit提交时间排列。
 * 改变当前分支从master上拉出分支的位置。
-
 * merge是在master分支上使用git merge feat， rebase需要在feat分支上进行git rebase master。当前分支在master上变基。要对每一次提交的内容进行冲突解决。 如上图例子，需要解决四次冲突
 * 可以使用squash合并commit
+
+
+
+## reset & revert
+
+### reset
+
+reset后跟的是要回退到的版本号
+
+* -- soft：回退后之前修改的代码变为add状态，
+* --hard：回退后重制索引和working tree，所有没提交的代码都被丢弃
+
+push到远端需要push -force
+
+### revert
+
+revert后需要跟具体回退的版本号，也就应该是reset目标的后一个版本号。
+
+commit 1 - commit 2 - commit 3
+
+我们执行revert commit-2
+
+commit 1 - commit 2 - commit 3 - commit 4
+
+相当于只是多了一条commit，把该分支上的所有修改都改回去了。
+
+
+
+## stash
+
+当我们写到一半，工作流被打断。需要切换到别的分支改代码，就需要使用git stash。
+
+git stash list查看stash列表
+
+操作完后使用git stash pop
