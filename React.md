@@ -1,4 +1,4 @@
-## 生命周期
+## 	生命周期
 
 ![image-20210514112832862](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514112832862.png)
 

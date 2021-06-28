@@ -164,16 +164,56 @@ Module本质就是对象
 
 路径分析+文件定位+编译执行
 
+路径分析：通过文件路径名获取模块引用
+
 加载顺序：
 
-1. 系统缓存：模块被执行后会进行缓存
-2. 系统模块：原生模块（核心模块会省略路径分析和文件定位）
-3. 文件模块
-
-
+1. 载入内置（核心）模块
+2. 载入文件模块
+3. 载入文件目录模块
+4. 载入node_modules模块 => index.js
+5. 自动缓存已载入模块
+6. 二次加载一律以缓存为最高优先级
 
 #### module.exports 和 exports
 
 * 初始时exports和module.exports指向同一快内存区域
 * 模块导出的是module.exports，exports只是对他的引用，修改exports值可以改变module.exports的值
 * 尽量使用module.exports.
+
+#### import & require
+
+* CJS输出值的拷贝，即模块内部的变化影响不到已经输出的值， ES6输出值的引用（原始值变化，import加载值变化）一个例子如下（类似Unix符号连接）
+
+  ```
+  // lib.js
+  export let counter = 3;
+  export function incCounter() {
+    counter++;
+  }
+  
+  // main.js
+  import { counter, incCounter } from './lib';
+  console.log(counter); // 3
+  incCounter();
+  console.log(counter); // 4
+  ```
+
+
+
+import静态加载，require动态加载
+
+静态加载在代码编译时执行（即在运行前执行，被导入的模块不论位置如何都会先执行），动态加载代码编译后运行时执行（脚本运行完后对象才会生成）
+
+```
+// index.js
+console.log('running index.js');
+import { sum } from './sum.js';
+console.log(sum(1, 2));
+
+// sum.js
+console.log('running sum.js');
+export const sum = (a, b) => a + b;
+输出
+running sum.js, running index.js, 3。
+```
