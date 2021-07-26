@@ -130,30 +130,6 @@ allocUnsafe创建的Buffer实例底层没有经过初始化，新建的Buffer内
 
 
 
-## V8 GC
-
-大部分对象生命周期很短，少部分对象生命周期很长。因此V8将堆分为新生代/老生代两种。新生代中对象较小1-8MB，GC频繁。幸存下来的会被提升到老生代空间。
-
-### 新生代scavenge算法
-
-复制算法，一分为二，两个相等大小的from-space和to-space。将from-space中的存活对象复制，移动到to-space。复制后，清理from-space，空间身份发生对调。to-space变为from-space，from-space变为to-space
-
-* 晋升为老生代条件：经历过一次Scavenge筛选，To空间内存使用超过25%
-
-
-
-### 老生代Mark-sweep和Mark-compact算法
-
-老生代空间中对象至少经历过一次scavenge回收，存活几率大。scavenge浪费大量空间。
-
-Mark-sweep分为标记/清除两个步骤，标记活对象并把未标记的死对象进行清除。
-
-问题：被清除的对象遍布各内存地址，产生内存碎片。
-
-Mark-comact（标记整理）一边标记一边把活对象向内存一端移动，移动完成后，直接清除内存边界外的内存。
-
-
-
 ## Module机制
 
 CJS

@@ -167,7 +167,7 @@ legacy中：异步。更新优先级相同。
 
 ### Redux
 
-![image-20210217235930232](C:\Users\20767\AppData\Roaming\Typora\typora-user-images\image-20210217235930232.png)
+![img](https://user-gold-cdn.xitu.io/2019/6/18/16b68beda28f65bc?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 
 * 组件通过actionCreators创建action，通过store.dispatch()出去
 * store存储state
@@ -180,3 +180,9 @@ legacy中：异步。更新优先级相同。
 #### Redux-thunk
 
 允许action返回函数，如果是函数，这个函数传参dispatch，然后就直接执行函数。可以进行简单异步操作
+
+
+
+### 高阶组件
+
+函数：接受组件作为参数返回一个新的经过改造的组件

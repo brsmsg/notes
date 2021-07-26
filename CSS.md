@@ -91,12 +91,11 @@ rem: 根元素的font-size
 
 * justifycontent: start/center/flex-end   space-between  space around
 * align items;
-* flex-grow: 剩余空间，子元素占剩余空间占比。设置为1 自动沾满
-* flex-shrink：超过容器值后，如何收缩数值越大
+* flex-grow: 剩余空间，子元素占剩余空间占比。设置为1 自动占满。默认为0，不占满
+* flex-shrink：超过容器值后，如何收缩数值越大。默认为1：自动收缩
 * flex-basis: 设置主轴方向尺寸（分配空间之前）根据他来计算剩余空间
-
-* flex: 默认 0 1 auto   取用户定义的宽高
-* flex：1   1 1 0 自动缩放，分配为0
+* flex: 默认g 0 1 auto   取用户定义的宽高
+* flex：1  grow-1 shrink-1 basis-0  自动缩放，分配为0
 
 
 
@@ -116,3 +115,20 @@ CSS3:
 * 无法使用逐帧，仅使用关键帧
 * 执行和js主线程无关
 
+
+
+## 开启BFC
+
+* float值不为none
+
+* overflow：hidden（不为visible）
+
+* position不为relative和static
+
+* display为table-cell/inline-block
+
+IFC:
+
+inline-format-context
+
+无法指定宽高，垂直方向上的margin/padding不起作用

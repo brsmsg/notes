@@ -208,6 +208,14 @@ eg: person.proto -> Person.prototype  & Person.prototype.proto-> Object.prototyp
 
 属性查找：实例对象.a -> 构造函数.prototype.a -> Object.prototype.a
 
+##### 注意：Function instanceof Object 和 Object instanceof Function 都为true
+
+Function.proto === Function.prototype
+
+Function.prototype.proto === Object.prototype 
+
+
+
 
 
 ### 深浅拷贝
@@ -433,7 +441,7 @@ const handler = {
 
 
 
-### 尾递归优化
+### 尾递归优化（仅Safari支持）
 
 外部函数的返回值是内部函数的一个返回值
 
@@ -490,3 +498,43 @@ baz();
 #### 应用：尾递归
 
 递归耗费内存，保留大量调用帧，使用尾递归形式，只存在一个调用帧，不会发生stack overflow错误。	
+
+
+
+
+
+## V8 GC优化
+
+大部分对象生命周期很短，少部分对象生命周期很长。因此V8将堆分为新生代/老生代两种。新生代中对象较小1-8MB，GC频繁。幸存下来的会被提升到老生代空间。
+
+### 新生代scavenge算法
+
+复制算法，一分为二，两个相等大小的from-space和to-space。将from-space中的存活对象复制，移动到to-space。复制后，清理from-space，空间身份发生对调。to-space变为from-space，from-space变为to-space
+
+* 晋升为老生代条件：经历过一次Scavenge筛选，To-space空间内存使用超过25%
+
+### 老生代Mark-sweep和Mark-compact算法
+
+老生代空间中对象至少经历过一次scavenge回收，存活几率大。scavenge浪费大量空间。
+
+Mark-sweep分为标记/清除两个步骤，标记活对象并把未标记的死对象进行清除。
+
+问题：被清除的对象遍布各内存地址，产生内存碎片。
+
+#### Mark-comact（标记整理）
+
+* Mark-Sweep的问题，清除后的空闲内存空间不连续
+
+一边标记一边把活对象向内存一端移动，移动完成后，直接清除内存边界外的内存。
+
+### 并行回收（新生代GC中使用）
+
+* GC时阻塞JS脚本执行，GC完毕后恢复执行（全停顿stop-the -world）
+* 开启辅助线程，帮助主线程进行GC
+
+### 增量标记&三色标记法
+
+增量即将一次GC分成很多小份，没执行完一小份就执行一下逻辑
+
+![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/e16d93c2c8414d3ab7eac55c852c678a~tplv-k3u1fbpfcp-zoom-1.image)
+

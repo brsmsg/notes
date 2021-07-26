@@ -42,8 +42,6 @@ virtual dom：
 
 
 
-
-
 # diff
 
 * 真实DOM操作缓慢
@@ -83,7 +81,6 @@ virtual dom：
 单节点：
 
 * 判断复用：先比较key，key相同再比较type，都相同时一个DOM才能复用
-* 
 
 ##### 多节点DIff
 
@@ -114,7 +111,9 @@ old/new均未遍历完的情况下，将剩余oldFiber存入以key为key，oldFI
 
 ## Scheduler-reconciler-Renderer架构
 
-* Reconciler工作阶段就是render阶段。该阶段调用组件render方法。
+* Scheduler负责调度任务优先级，高优先级任务进入Reconciler
+
+* Reconciler工作阶段就是render阶段。该阶段调用组件render方法。 （Reconciler重构目的：将老的同步更新改为**异步可中断**更新）
 
 * Renderer工作阶段为commit阶段。commit阶段把render阶段提交的信息渲染在页面上
 * render&commit 统称为work。即React在工作中，任务如果在Scheduler里调度，就不属于work
@@ -123,28 +122,80 @@ old/new均未遍历完的情况下，将剩余oldFiber存入以key为key，oldFI
 
 
 
-## Fiber架构
+## Fiber架构(unit of work)
+
+fiber树结构：
+
+![Fiber架构](https://react.iamkasong.com/img/fiber.png)
 
 更新DOM原理
 
-"双缓存" 两颗Fiber树：
+"双缓存" 两颗Fiber树：（类似canvas，使用offscreen canvas）
 
 当前浏览器显示的current Fiber
 
 内存中构建的 workInProgress Fiber
 
+两棵树使用alternate连接
+
 * 每次状态更新会产生新的workInProgress Fiber。通过替换wIP 和 current Fiber完成DOM替换
+
 * WIP FIber树构建完后renderer渲染在页面上候，根节点current指针指向wip FIber树，WIP变为current
 
+* fiberRootNode节点，current属性指向curFiber：
 
+* mount阶段时：图中构建完左侧的WIP Fiber将在commit阶段被渲染到页面
 
-## render阶段
+  ![workInProgressFiber](https://react.iamkasong.com/img/workInProgressFiber.png)
+
+#### 影响生命周期
+
+```
+componentWillMount
+componentWillUpdate
+componentWillReceiveProps
+```
+
+render阶段允许暂停，终止，重启，导致render阶段生命周期可能重复执行，故废弃
+
+## render阶段(执行Reconciler)
+
+**改为使用遍历方式实现可中断递归！**
+
+开始于`performSyncWorkOnRoot`或`performConcurrentWorkOnRoot`方法的调用，这两个方法会调用
+
+```js
+// performSyncWorkOnRoot会调用该方法
+function workLoopSync() {
+  while (workInProgress !== null) {
+    performUnitOfWork(workInProgress);
+  }
+}
+
+// performConcurrentWorkOnRoot会调用该方法
+function workLoopConcurrent() {
+  while (workInProgress !== null && !shouldYield()) {
+    performUnitOfWork(workInProgress);
+  }
+}
+```
+
+**shouldYield(): 浏览器有没有剩余时间，如果没有，就终止，有空闲时间再继续遍历**
+
+WIP表示正在处理的WIP fiber节点，是一个全局变量
+
+```js
+// The fiber we're working on
+let workInProgress: Fiber | null = null;
+```
+
+**performUnitOfwork()**会创建下一个Fiber节点，并赋值给WIP，并将WIP和已创建的Fiber节点连接。 即触发**beginWork()**调用
 
 分为递&归两段
 
-* 递：从root fiber向下遍历，为每个节点调用beginWork方法。根据传入Fiber节点创建子Fiber节点并连接。遍历到叶子结点进入归阶段
+* 递：从root fiber向下遍历，为每个节点调用beginWork()方法。根据传入Fiber节点创建子Fiber节点并连接。遍历到叶子结点进入归阶段
 
-* 归：归阶段调用completeWork函数，执行完后如果存在sibling节点执行sibling Fiber的completeWork，不存在sibling就执行父节点。直到执行到root fiber，整个render结束
+* 归：归阶段调用completeWork函数，执行完后如果存在sibling节点执行sibling Fiber的completeWork()，不存在sibling就执行父节点。直到执行到root fiber，整个render结束
 
 ### beginWork()
 
@@ -183,11 +234,20 @@ renderLanes：优先级相关
 1. fiber.stateNode存在，Fiber中保存DOM节点
 2. fiber存在placement effectTag
 
-对于第二个条件：入过mount阶段所有fiber树节点都有effectTag，commit阶段对所有DOM节点进行插入，效率低。解决办法：mount阶段只对rootFiber生成effectTag，只进行一次插入操作。
+对于第二个条件：如果mount阶段所有fiber树节点都有effectTag，commit阶段对所有DOM节点进行插入，效率低。解决办法：mount阶段只对rootFiber生成effectTag，只进行一次插入操作。
 
 ![image-20210514135001297](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514135001297.png)
 
+beginwork（）的工作：
 
+* 核心：根据传入的Fiber节点，创建Fiber子节点，并连接两个Fiber，调用到叶子组件时进入归阶段
+
+* 通过参数currentFiber判断组件是update还是mount
+  * 如果是update：判断是否可以复用
+    * 不可以复用，则根据WIP.tag区别对待，执行reconcileChildren(),diff算法生成带effect tag的新Fiber，复制给WIP.child，作为beginwork返回值
+      * 可以复用，检查子树是否需要更新，如果不需要就不进行操作
+      * 如果子树需要更新，
+  * 如果是mount，执行mountChildFiebr生成新子Fiber节点
 
 ### completeWork()
 
@@ -199,7 +259,7 @@ renderLanes：优先级相关
 
 * Mount时：
 
-  1. 为fiber生成对应DOM节点
+  1. 为fiber生成对应DOM节点->fiber.dom = x x x并没有挂在道页面
   2. 子孙节点插入刚生成DOM节点中
   3. 处理props
 
@@ -224,7 +284,7 @@ commit阶段需要找到所有存在effectTag的fiber节点并以此执行操作
 
 因此使用一条单链表effectlist来保存所有存在effectList的fiber节点。
 
-这样在commit阶段只需要遍历effectList即可。
+这样在**commit阶段**只需要遍历effectList即可。
 
 ![completeWork流程图](https://react.iamkasong.com/img/completeWork.png)
 
@@ -232,7 +292,11 @@ commit阶段需要找到所有存在effectTag的fiber节点并以此执行操作
 
 最后render阶段任务全部完成后调用commitRoot(root)进入commit阶段
 
+completeWork()的工作：
 
+
+
+* 注意顺序！执行完completeWork后，如果存在sibling节点，会进入sibling节点“递”阶段。不存在sibling就进入父节点的“归阶段”
 
 ## Commit 阶段
 
@@ -246,7 +310,7 @@ commitRoot(root)为入口，进入commit阶段
 * mutation阶段（执行DOM操作）
 * layout阶段（执行DOM操作之后）
 
-### beforeMutation
+### beforeMutation（执行DOM操作前）
 
 **主函数commitBeforeMutationEffects**
 
@@ -254,9 +318,9 @@ commitRoot(root)为入口，进入commit阶段
 2. 调用getSnapshotBeforeUpdate生命周期钩子
 3. 调度useEffect（而非调用）
 
-#### 调用getSnapshotBeforeUpdate
+#### 调用getSnapshotBeforeUpdate()
 
-* componentWillxxx的问题：更新fiber后，render阶段任务肯能会被中断/重新开始，因此componentWillxxx会被触发多次
+* **componentWillxxx的问题**：更新fiber后，render阶段任务肯能会被中断/重新开始，因此componentWillxxx会被触发多次
 * 改为getSnapshotBeforeUpdate，在commit阶段调用。commit阶段同步，不会存在被打断问题。
 
 #### 调度useEffect
@@ -304,6 +368,12 @@ host component：渲染页面
 1. 页面移除Fiber对应的DOM节点
 2. 解绑ref
 3. 调度useEffect销毁函数（而非调用）
+
+### layout
+
+* 调用componentDidUpdate/componentDidMount
+
+* currentFiber树切换：也就是root.current = WIP
 
 
 

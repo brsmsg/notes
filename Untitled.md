@@ -62,8 +62,6 @@ Vuex
 
 v-if v-show
 
-
-
 ## React
 
 生命周期？ hooks
