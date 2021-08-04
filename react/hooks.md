@@ -1,6 +1,8 @@
 ### 为什么不能在循环、判断内部使用hooks
 
-hooks实现中初始状态保存在全局变量中。多个状态使用一个全局数组。
+hooks实现中初始状态保存在全局变量中。多个状态使用一个全局数组。（模拟实现）
+
+本质实质上为链表
 
 过程如下：
 
@@ -16,7 +18,9 @@ hooks实现中初始状态保存在全局变量中。多个状态使用一个全
 * mount
 * update
 
-hooks以链形式存在
+**hooks以链表形式存在**: 根据调用顺序被链接。
+
+update时通过依次遍历定位hooks，也就是类似之前说的数组
 
 ![image-20210323180920278](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210323180920278.png)
 
@@ -34,7 +38,7 @@ mount阶段：
 
 * 调用setState
 
-mount阶段，使用循环链表，利用尾插法加入新的update。queue指向该链表（最新饿的update）
+mount阶段，使用循环链表，利用尾插法加入新的update。queue指向该链表（最新的update）
 
 ![image-20210323171318647](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210323171318647.png)
 

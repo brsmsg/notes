@@ -22,7 +22,7 @@ performNode函数中对每个fiber做三件事：
 
 2. 对element的children创建fiber
 
-3. 选择下一个fiber（有children就遍历children，没有就遍历sibling，如果都没有，去找parent的sibling），之后归操作
+3. 选择下一个fiber（有child就返回child，没有就返回sibling，如果都没有，去找parent的sibling），之后归操作
 
 4. 树结构：
 
@@ -38,3 +38,10 @@ performNode函数中对每个fiber做三件事：
 2. 不同且有一个新的element，创建DOM
 3. 不同且有一个旧的element，移除旧的element
 
+
+
+## FC
+
+FC对应的fiber没有dom node
+
+children从运行函数中返回得到，而不是从props

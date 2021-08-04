@@ -2,7 +2,7 @@
 
 ![image-20210514112832862](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514112832862.png)
 
-子组件更新不回影响父组件，父组件更新影响子组件。
+子组件更新不会影响父组件，父组件更新影响子组件。
 
 Fiber树 =>   也就是虚拟DOM 树  
 
@@ -86,8 +86,6 @@ v15之前改动上册组件调用栈会很长，因为没有IO操作，渲染过
 MVVM: model-viewModel-view
 
 MVVM就是实现了数据绑定的MVP（双向绑定：View 变动反映在ViewModel，反之亦然）。React只是单项数据流，仅状态驱动视图。没有绑定
-
-
 
 
 
@@ -183,6 +181,22 @@ legacy中：异步。更新优先级相同。
 
 
 
+### PureComponent && memo
+
+当子组件需要用到的props更新时，才更新子组件（重写shouldComponentUpdate声明周期hook）
+
+memo用于FC，
+
+PureComponent用于class
+
+
+
 ### 高阶组件
 
 函数：接受组件作为参数返回一个新的经过改造的组件
+
+例子：React,memo()
+
+### 父子组件生命周期
+
+render以及render前的生命周期，父组件先执行，render后的生命周期子组件先执行，和父组件交替执行

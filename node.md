@@ -51,13 +51,13 @@ timers执行setTimeout/setInterval回调，由poll控制
 
 一个Tick也就是一个事件循环体
 
-setImmediate表示主线程执行完后立即执行，该轮事件循环最后立即执行，先于下一轮事件循环中的timers执行
+setImmediate表示主线程执行完后立即执行，（该轮事件循环最后立即执行，先于下一轮事件循环中的timers执行）
 
 setImmediate采用check观察者，process.nextTick采用idle，在setTimeout/setInterval前执行
 
 setImmidate和setTimeout，如果都在主模块中调用，执行先后取决于系统性能，如果都不在主模块调用，setImmediate回调会先执行
 
-process.nextTick不属于任何阶段，属于过度 优先级高于promise
+process.nextTick不属于任何阶段，属于过度 **优先级高于promise**
 
 
 

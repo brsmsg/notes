@@ -14,25 +14,15 @@
 
 ReactDOM.render(JSX, dom)
 
-JSX=>虚拟DOM，object
+####  JSX && Fiber
 
-virtual dom： 
+JSX不包含以下信息；
 
-```javascript
-{
+* 更新优先级
+* 组件state
+* 用于renderer的标记
 
-​	type: "div",
 
-​	props: [
-
-​		id: ""	
-
-​		children: ""
-
-​	]
-
-}
-```
 
 
 
@@ -84,22 +74,32 @@ virtual dom：
 
 ##### 多节点DIff
 
-* 两轮遍历：因为更新节点更容易出现。第一轮处理更新节点第二轮遍历处理	剩下的不属于更新的节点
-* 第一轮遍历：key不同导致不可复用，跳出遍历进入第二轮 && newChildren 或者 oldChildren遍历完 跳出遍历，进入第二轮遍历
+* 两轮遍历：**因为更新节点更容易出现**。第一轮处理更新节点，第二轮遍历处理剩下的不属于更新的节点
+
+* 第一轮遍历：key不同导致不可复用，跳出遍历进入第二轮 && newChildren 或者 oldChildren遍历完 跳出遍历，进入第二轮遍历.
+
+  key相同 type 不同导致不可复用，oldFiber标记为deletion	
 
 * 第二轮：
-  * old/new 同时遍历完
-  * new 没遍历完， old 遍历完，表示有新的节点
-  * new遍历完，old没遍历完
-  * 都没遍历完：说明节点位置发生了变化 diff精髓部分
+  * old/new 同时遍历完：理想情况
+  
+  * new 没遍历完， old 遍历完，表示有新的节点，继续遍历剩下的new，并给生成的WIP fiber标记为placement
+  
+  * new遍历完，old没遍历完，遍历剩下的old，标记为deletion
+  
+  * #### 都没遍历完：说明节点位置发生了变化！ **diff最精髓的部分**
 
 调换位置处理key！
 
 old/new均未遍历完的情况下，将剩余oldFiber存入以key为key，oldFIber为value的map中。
 
+```
+new Map<key, oldFiber>()
+```
+
 之后遍历剩余new Children，就可以找到相应key对应的old Fiber。
 
-节点移动参照：最后一个可复用节点在oldFiber中的位置索引。本次更新中节点按照newChildren
+节点移动参照：最后一个可复用节点在oldFiber中的位置索引(lastPlaceIndex)。本次更新中节点按照newChildren
 
 ## 回调Ref
 
@@ -193,9 +193,9 @@ let workInProgress: Fiber | null = null;
 
 分为递&归两段
 
-* 递：从root fiber向下遍历，为每个节点调用beginWork()方法。根据传入Fiber节点创建子Fiber节点并连接。遍历到叶子结点进入归阶段
+* 递：（创建Fiber节点，构成树）从root fiber向下遍历，为每个节点调用beginWork()方法。根据传入Fiber节点创建子Fiber节点并连接。遍历到叶子结点进入归阶段
 
-* 归：归阶段调用completeWork函数，执行完后如果存在sibling节点执行sibling Fiber的completeWork()，不存在sibling就执行父节点。直到执行到root fiber，整个render结束
+* 归：（处理Fiber节点：添加DOM，处理props）归阶段调用completeWork函数，执行完后如果存在sibling节点执行sibling Fiber的completeWork()，不存在sibling就执行父节点。直到执行到root fiber，整个render结束
 
 ### beginWork()
 
@@ -372,8 +372,31 @@ host component：渲染页面
 ### layout
 
 * 调用componentDidUpdate/componentDidMount
-
 * currentFiber树切换：也就是root.current = WIP
+
+
+
+## 状态更新
+
+#### 流程：触发状态更新 ====> 创建Update对象====> 从fiber到root ====> 调度更新 ====> render ====> commit
+
+##### 创建Update对象,保存更新状态相关内容，beginWork中根据update计算新state
+
+以下方法可以触发状态更新：
+
+ReactDOM.render()
+
+this.setState()
+
+this.forceUpdate()
+
+useState()
+
+useReducer()
+
+##### 触发状态更新的fiber 通过 markUpdateLaneFromFiberToRoot 方法向上遍历到root并返回rootFiber
+
+
 
 
 
@@ -397,7 +420,7 @@ const update = {
 
 形成环状单项链表，queue指向该链表头节点。对于每个useState，每调用一个setState就会往该queque环形链表中插入一个update
 
-* queue放在fiber中
+* queue放在fiber中：**fiber.memoizedState.queue**
 
   ```js
   // App组件对应的fiber对象
