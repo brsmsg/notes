@@ -24,7 +24,7 @@ reject函数从pending -> rejected
 
 状态改变调用
 
-返回新promise实例，因此可采用链式调用。通过杨接受两个回调作为参数，第一个是状态变为fulfilled之后的调用，第二个是状态变为rejected的调用。第二个参数可选
+返回新promise实例，因此可采用链式调用。通过接受两个回调作为参数，第一个是状态变为fulfilled之后的调用，第二个是状态变为rejected的调用。第二个参数可选
 
 #### 2. catch()
 

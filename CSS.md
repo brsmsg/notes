@@ -93,7 +93,7 @@ rem: 根元素的font-size
 * align items;
 * flex-grow: 剩余空间，子元素占剩余空间占比。设置为1 自动占满。默认为0，不占满
 * flex-shrink：超过容器值后，如何收缩数值越大。默认为1：自动收缩
-* flex-basis: 设置主轴方向尺寸（分配空间之前）根据他来计算剩余空间
+* flex-basis: 设置主轴方向尺寸（分配空间之前）根据他来计算剩余空间  默认 auto（和宽度同宽）
 * flex: 默认g 0 1 auto   取用户定义的宽高
 * flex：1  grow-1 shrink-1 basis-0  自动缩放，分配为0
 

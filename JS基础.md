@@ -17,7 +17,7 @@
 * 先判断类型是否相同，类型相同进行 === 比较
 * 先比较null == undefined ？
 * 之后比较 string == number ？string 转number（核心：这两个都是转number）
-* 之后不管任何类型，有boolean有就boolean转number
+* 之后不管任何类型，有boolean就boolean转number
 * 之后是否有object 有就object转基本类型，先调用valueOf，还是非原始类型就调用toString
 
 000表示对象
@@ -73,14 +73,6 @@ const f = () =>{
 };
 
 setTimeout(f, 1000);
-
-### 执行上下文（Execution Context）
-
-全局执行上下文，不在函数内部的代码都在全局上下文中
-
-函数执行上下文，函数被__调用__时创建新的上下文
-
-每个上下文一个关联的变量对象，该上下文中定义的
 
 
 
@@ -167,7 +159,7 @@ JS中，词法作用域规则：内部函数可以访问外部函数中的变量
 
 调用一个外部函数，返回一个内部函数，即使外部函数执行完，作用域不会销毁！原因：匿名函数context入栈，最后退栈之后，栈顶还是外部函数的context，匿名函数作用域链还是在引用活动对象。
 
-##### 内部函数对外部函数中变量的引用仍然保存在内存中。
+##### 内部函数对外部函数中变量的引用仍然保存在内存中。（核心：内部函数被外部引用，因此函数对象的scope属性（作用域链）不被回收=〉作用域连引用的所有的活动对象不被回收！）
 
 * 好处：缓存，不被GC & 实现柯里化， 函数防抖节流
 * 坏处：内存消耗 & 性能问题
@@ -277,7 +269,7 @@ DOM0级处理：btn.onclick = () => {}
 
 DOM2级处理：addEventListener("click", ()=>{})
 
-事件对象：
+事件对象：（先捕获，再冒泡）
 
 * currentTarget：Element 事件处理程序正在处理的对象
 
@@ -297,7 +289,7 @@ DOM2级处理：addEventListener("click", ()=>{})
 
 hash是指url尾巴后的#以及后面的字符。#后hash值变化不会导致浏览器发出请求。使用hash实现前端路由，页面定位。 window.location.hash
 
-history模式会向服务器发请求
+history模式刷新页面会向服务器发请求
 
 window.history.back()后退 = history.go(-1)
 

@@ -87,7 +87,7 @@ JSX不包含以下信息；
   
   * new遍历完，old没遍历完，遍历剩下的old，标记为deletion
   
-  * #### 都没遍历完：说明节点位置发生了变化！ **diff最精髓的部分**
+  * #### 都没遍历完：说明节点位置发生了变化！ **diff最精髓的部分（ **map实现）
 
 调换位置处理key！
 
@@ -236,7 +236,7 @@ renderLanes：优先级相关
 
 对于第二个条件：如果mount阶段所有fiber树节点都有effectTag，commit阶段对所有DOM节点进行插入，效率低。解决办法：mount阶段只对rootFiber生成effectTag，只进行一次插入操作。
 
-![image-20210514135001297](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514135001297.png)
+<img src="https://react.iamkasong.com/img/beginWork.png" alt="beginWork流程图" style="zoom: 200%;" />
 
 beginwork（）的工作：
 
@@ -312,6 +312,8 @@ commitRoot(root)为入口，进入commit阶段
 
 ### beforeMutation（执行DOM操作前）
 
+遍历EffectList，对每个Fiber执行：
+
 **主函数commitBeforeMutationEffects**
 
 1. 处理DOM渲染/删除后的autoFocus blur逻辑
@@ -333,11 +335,14 @@ commitRoot(root)为入口，进入commit阶段
 
 ### mutation阶段（执行DOM操作）
 
+同样，遍历EffectList，执行主函数
+
 **主函数commitMutationEffects**
 
 1. 根据contentReset effectTag重制文字节点
 2. 更新ref
 3. 根据effectTag分别处理  其中`effectTag`包括(`Placement` | `Update` | `Deletion` | `Hydrating`)
+4. 执行componentWillUnmount
 
 #### placement effect
 
@@ -347,7 +352,7 @@ commitRoot(root)为入口，进入commit阶段
 2. 获取DOM兄弟节点 ```getHostSibling(finishedWork);```
 3. 根据兄弟节点是否存在决定调用insert Before还是appendChild
 
-* 注意getHostSibling操作很费时。因为Fiber节点不只包括HostComponent（即真实DOM对应的FIber），因此可能会存在跨层级遍历
+* 注意getHostSibling（获取兄弟节点的DOM）操作很费时。因为Fiber节点不只包括HostComponent（即真实DOM对应的FIber），因此可能会存在跨层级遍历
 
 
 
@@ -369,10 +374,25 @@ host component：渲染页面
 2. 解绑ref
 3. 调度useEffect销毁函数（而非调用）
 
+#### mutation阶段结束后，layout阶段开始前，执行
+
+```js
+root.current = finishedWork;
+```
+
 ### layout
 
+遍历effectlist，执行函数	
+
 * 调用componentDidUpdate/componentDidMount
-* currentFiber树切换：也就是root.current = WIP
+* 对于classComponent，调用setState回调。
+  * 对于functional Component，调用useEffectLayout回调
+
+##### useEffect 和 useLayoutEffect
+
+useLayoutEffect在layout阶段同步执行
+
+useEffect需要先调度在layout阶段后异步执行（防止同步阻塞页面渲染）
 
 
 
@@ -397,6 +417,38 @@ useReducer()
 ##### 触发状态更新的fiber 通过 markUpdateLaneFromFiberToRoot 方法向上遍历到root并返回rootFiber
 
 
+
+### UPdate结构
+
+classComponent和HostComponent结构相同：
+
+``````javascript
+const update: Update<*> = {
+  eventTime,  //未来重构
+  lane,   //优先级相关
+  suspenseConfig,  //suspense相关
+  tag: UpdateState, //更新类型，包括UpdateState | ReplaceState | ForceUpdate | CaptureUpdate
+  payload: null,  //更新挂载的数据: classComponent中payload为setState第一个传参，Host中为render第一个传参
+  callback: null,  //更新回调 setState中回调
+
+  next: null,  //链接其他update形成链表
+};
+``````
+
+fiber.updateQueue上保存update组成的链表
+
+
+
+## 优先级
+
+根据HCI交互研究结果：
+
+* 生命周期方法：同步执行
+* 受控用户输入：input之类的同步执行
+* 交互事件：比如动画，高优先级执行
+* 其他：比如数据请求，低优先级
+
+![优先级如何决定更新的顺序](https://react.iamkasong.com/img/update-process.png)
 
 
 

@@ -1,6 +1,6 @@
 ## 	生命周期
 
-![image-20210514112832862](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210514112832862.png)
+![image-20210817225208277](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210817225208277.png)
 
 子组件更新不会影响父组件，父组件更新影响子组件。
 
@@ -14,7 +14,7 @@ Reconciler=> 执行reconcile算法（diff算法）
 
 1. props或state改变
 2. render函数返回不同的DOM树
-3. 新界DOM对比（diff算法）
+3. 新旧DOM对比（diff算法）
 4. 针对差异地方更新
 5. 渲染为真实DOM
 
@@ -56,9 +56,13 @@ Render=> 执行ReactDOM渲染器
 
 
 
-新旧区别：getDerivedStateFromProps(nextProps, prevState) 替代willRecieveProps  getSnapShotBeforeUpdate 替换 componentWillUpdate
+新旧区别：getDerivedStateFromProps(nextProps, prevState) 替代willRecieveProps  
 
-从props中获取state
+props映射到state上
+
+getSnapShotBeforeUpdate 替换 componentWillUpdate
+
+更新前捕获一些DOM/ref信息
 
 #### Fiber
 
@@ -97,7 +101,7 @@ MVVM就是实现了数据绑定的MVP（双向绑定：View 变动反映在ViewM
 
 1. 分层比较：仅比较同一层的节点
 2. 不同两个节点会产生不同的树（只要节点不同，删除所有子树，创建新树）
-3. 不使用ke（指定相同元素），会直接对列表元素进行增加删除操作。使用key了之后会对新集合遍历，通过key判断是否需要创建/删除
+3. 不使用key（指定相同元素），会直接对列表元素进行增加删除操作。使用key了之后会对新集合遍历，通过key判断是否需要创建/删除
 
 #### diff 流程
 
@@ -130,6 +134,8 @@ useMemo（）同样
 
 
 #### setState同步还是异步
+
+**所谓“异步”，其实由同步代码实现**
 
 legacy/blocking/conurrent模式.创建方式不同
 
