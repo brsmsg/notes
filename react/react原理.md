@@ -499,3 +499,22 @@ hook = {
 }
 ```
 
+demo简单实现看这里：https://github.com/brsmsg/my-hooks
+
+## 启动流程
+
+### 三种模式
+
+* legacy（默认）：  `ReactDOM.render(<App />, rootNode)` 不支持concurrent新功能
+* Blocking：`ReactDOM.createBlockingRoot(rootNode).render(<App />)` 迁移到concurrent第一步，支持部分功能
+* Concurrent（实验）：`ReactDOM.createRoot(rootNode).render(<App />)` 之后的默认模式
+
+### 流程
+
+#### 创建全局对象
+
+创建三个全局对象：
+
+1. ReactDOMRoot：暴露render unMount方法，调用render引导启动
+2. fiberRoot：作为react-reconciler运行过程中全局上下文，保存fiber构建中所依赖全局状态。
+3. HostRootFiber：第一个Fiber对象，Fiber树根节点
