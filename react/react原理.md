@@ -24,6 +24,16 @@ JSX不包含以下信息；
 
 
 
+Component 作为createElement第一个参数，生成ReactElement
+
+## 代数效应
+
+核心：将副作用从函数调用中分离，使函数的关注点保持纯粹
+
+hooks
+
+fiber（中断后恢复 Dan博客中的 resume with 语法）
+
 
 
 # setState
@@ -118,11 +128,13 @@ new Map<key, oldFiber>()
 * Renderer工作阶段为commit阶段。commit阶段把render阶段提交的信息渲染在页面上
 * render&commit 统称为work。即React在工作中，任务如果在Scheduler里调度，就不属于work
 
+  从调用栈出发，下图是首屏渲染时的调用栈：从左到右，依次为scheduler，reconciler，renderer
 
-
-
+![image-20210924123323345](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210924123323345.png)
 
 ## Fiber架构(unit of work)
+
+FIber：静态数据结果 & 动态工作单元
 
 fiber树结构：
 
@@ -324,6 +336,7 @@ commitRoot(root)为入口，进入commit阶段
 
 * **componentWillxxx的问题**：更新fiber后，render阶段任务肯能会被中断/重新开始，因此componentWillxxx会被触发多次
 * 改为getSnapshotBeforeUpdate，在commit阶段调用。commit阶段同步，不会存在被打断问题。
+* getSnapshotBeforeUpdate: 需要有一个返回值，作为快照。且需要配合componentDidUpdate使用，如果没有返回值/componentDidUpdate，React会给予警告。返回值将作为componnetDidUpdate的第三个参数
 
 #### 调度useEffect
 
