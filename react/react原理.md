@@ -246,7 +246,7 @@ renderLanes：优先级相关
 1. fiber.stateNode存在，Fiber中保存DOM节点
 2. fiber存在placement effectTag
 
-对于第二个条件：如果mount阶段所有fiber树节点都有effectTag，commit阶段对所有DOM节点进行插入，效率低。解决办法：mount阶段只对rootFiber生成effectTag，只进行一次插入操作。
+**一个优化：**对于第二个条件：如果mount阶段所有fiber树节点都有effectTag，commit阶段对所有DOM节点进行插入，效率低。解决办法：mount阶段只对rootFiber生成effectTag，只进行一次插入操作。
 
 <img src="https://react.iamkasong.com/img/beginWork.png" alt="beginWork流程图" style="zoom: 200%;" />
 
@@ -255,11 +255,16 @@ beginwork（）的工作：
 * 核心：根据传入的Fiber节点，创建Fiber子节点，并连接两个Fiber，调用到叶子组件时进入归阶段
 
 * 通过参数currentFiber判断组件是update还是mount
+  
+  * 根据不同的WIP Fiber节点tag，执行不同的逻辑
+  
   * 如果是update：判断是否可以复用
     * 不可以复用，则根据WIP.tag区别对待，执行reconcileChildren(),diff算法生成带effect tag的新Fiber，复制给WIP.child，作为beginwork返回值
       * 可以复用，检查子树是否需要更新，如果不需要就不进行操作
       * 如果子树需要更新，
-  * 如果是mount，执行mountChildFiebr生成新子Fiber节点
+  * 如果是mount，执行mountChildFiebr生成新子Fiber节点，赋值给Fiber.child，
+  
+* 每次调用beginWork()，都只会创建一个Fiber节点
 
 ### completeWork()
 
@@ -289,6 +294,12 @@ beginwork（）的工作：
   ```
 
   当递归到rootFiber时，我们已经有了一个完整的offscreen fiber树
+
+#### effectTag
+
+![image-20210926201709524](/Users/brsmsg/Library/Application Support/typora-user-images/image-20210926201709524.png)
+
+采用二进制掩码实现，方便进行按位或操作。
 
 #### effectlist
 
